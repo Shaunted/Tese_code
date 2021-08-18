@@ -1,0 +1,20 @@
+{
+    "project_name":       "bootloader",
+    "project_path":       "/home/shaunted/esp/esp-idf/components/bootloader/subproject",
+    "build_dir":          "/home/shaunted/TESE/ble_spp_server/build/bootloader",
+    "config_file":        "/home/shaunted/TESE/ble_spp_server/sdkconfig",
+    "config_defaults":    "",
+    "app_elf":            "bootloader.elf",
+    "app_bin":            "bootloader.bin",
+    "git_revision":       "v4.2.1-dirty",
+    "target":             "esp32",
+    "phy_data_partition": "",
+    "monitor_baud" :      "115200",
+    "monitor_toolprefix": "xtensa-esp32-elf-",
+    "config_environment" : {
+        "COMPONENT_KCONFIGS" : "/home/shaunted/esp/esp-idf/components/efuse/Kconfig;/home/shaunted/esp/esp-idf/components/esp32/Kconfig;/home/shaunted/esp/esp-idf/components/esp_common/Kconfig;/home/shaunted/esp/esp-idf/components/log/Kconfig;/home/shaunted/esp/esp-idf/components/spi_flash/Kconfig",
+        "COMPONENT_KCONFIGS_PROJBUILD" : "/home/shaunted/esp/esp-idf/components/bootloader/Kconfig.projbuild;/home/shaunted/esp/esp-idf/components/esptool_py/Kconfig.projbuild;/home/shaunted/esp/esp-idf/components/partition_table/Kconfig.projbuild"
+    },
+    "build_components" : [ "bootloader", "bootloader_support", "efuse", "esp32", "esp_common", "esp_rom", "esptool_py", "log", "main", "micro-ecc", "partition_table", "soc", "spi_flash", "xtensa", "" ],
+    "build_component_paths" : [ "/home/shaunted/esp/esp-idf/components/bootloader", "/home/shaunted/esp/esp-idf/components/bootloader_support", "/home/shaunted/esp/esp-idf/components/efuse", "/home/shaunted/esp/esp-idf/components/esp32", "/home/shaunted/esp/esp-idf/components/esp_common", "/home/shaunted/esp/esp-idf/components/esp_rom", "/home/shaunted/esp/esp-idf/components/esptool_py", "/home/shaunted/esp/esp-idf/components/log", "/home/shaunted/esp/esp-idf/components/bootloader/subproject/main", "/home/shaunted/esp/esp-idf/components/bootloader/subproject/components/micro-ecc", "/home/shaunted/esp/esp-idf/components/partition_table", "/home/shaunted/esp/esp-idf/components/soc", "/home/shaunted/esp/esp-idf/components/spi_flash", "/home/shaunted/esp/esp-idf/components/xtensa", "" ]
+}

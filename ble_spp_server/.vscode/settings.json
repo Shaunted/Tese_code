@@ -1,0 +1,27 @@
+{
+  "C_Cpp.intelliSenseEngine": "Tag Parser",
+  "idf.port": "/dev/ttyS8",
+  "idf.adapterTargetName": "esp32",
+  "idf.openOcdConfigs": [
+    "interface/ftdi/esp32_devkitj_v1.cfg",
+    "target/esp32.cfg"
+  ],
+  "files.associations": {
+    "uart.h": "c",
+    "string.h": "c",
+    "esp_bt.h": "c",
+    "esp_system.h": "c",
+    "optional": "c",
+    "istream": "c",
+    "ostream": "c",
+    "ratio": "c",
+    "system_error": "c",
+    "array": "c",
+    "functional": "c",
+    "tuple": "c",
+    "type_traits": "c",
+    "utility": "c",
+    "btc_ble_storage.h": "c",
+    "random": "c"
+  }
+}
