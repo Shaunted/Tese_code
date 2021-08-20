@@ -169,11 +169,12 @@ void app_main(void)
                 t.tx_buffer = &test_buffer[n];
                 printf("TESTING TESTING: %i\n", test_buffer[n]);
                 t.rx_buffer = recv_buffer;
+
+
+                ret = spi_device_polling_transmit(handle, &t);
                 memcpy(&r_buf[n], recv_buffer, sizeof(recv_buffer));
                 printf("RECEIVED: %u\n", r_buf[n]);
                 printf("NNNN = %i\n", n);
-
-                ret = spi_device_polling_transmit(handle, &t);
                 n++;
             }
             printf("FUCKIT: %i%i\n", r_buf[0], r_buf[1]);

@@ -73,14 +73,14 @@
 #define SPP_TAG "SPP_ACCEPTOR_DEMO"
 #define SPP_SERVER_NAME "SPP_SERVER"
 #define EXAMPLE_DEVICE_NAME "ESP_SPP_ACCEPTOR"
-#define SPP_SHOW_DATA 0
-#define SPP_SHOW_SPEED 1
-#define SPP_SHOW_MODE SPP_SHOW_DATA /*Choose show mode: show data or speed*/
+// #define SPP_SHOW_DATA 0
+// #define SPP_SHOW_SPEED 1
+// #define SPP_SHOW_MODE SPP_SHOW_DATA /*Choose show mode: show data or speed*/
 
 uint8_t blt_buffer[1024];
 uint32_t blt_handle;
 uint16_t blt_len;
-volatile bool testing = 0;
+// volatile bool testing = 0;
 
 uint8_t test_buffer[9];
 uint8_t sendreq_buffer[9] = {0xFF,};
@@ -93,8 +93,8 @@ volatile bool SERIALFLAG = 0;
 // BT VARIABLES
 static const esp_spp_mode_t esp_spp_mode = ESP_SPP_MODE_CB;
 
-static struct timeval time_new, time_old;
-static long data_num = 0;
+// static struct timeval time_new, time_old;
+// static long data_num = 0;
 
 static const esp_spp_sec_t sec_mask = ESP_SPP_SEC_AUTHENTICATE;
 static const esp_spp_role_t role_slave = ESP_SPP_ROLE_SLAVE;
@@ -158,7 +158,7 @@ static void esp_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
         ESP_LOGI(SPP_TAG, "ESP_SPP_CL_INIT_EVT");
         break;
     case ESP_SPP_DATA_IND_EVT:
-#if (SPP_SHOW_MODE == SPP_SHOW_DATA)
+// #if (SPP_SHOW_MODE == SPP_SHOW_DATA)
         ESP_LOGI(SPP_TAG, "ESP_SPP_DATA_IND_EVT len=%d handle=%d",
                  param->data_ind.len, param->data_ind.handle);
         esp_log_buffer_hex("", param->data_ind.data, param->data_ind.len);
@@ -170,14 +170,14 @@ static void esp_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
         printf("data: %s\n", param->data_ind.data);
         printf("memcpy:%s\n", blt_buffer);
         SERIALFLAG = 1;
-#else
-        gettimeofday(&time_new, NULL);
-        data_num += param->data_ind.len;
-        if (time_new.tv_sec - time_old.tv_sec >= 3)
-        {
-            print_speed();
-        }
-#endif
+// #else
+//         gettimeofday(&time_new, NULL);
+//         data_num += param->data_ind.len;
+//         if (time_new.tv_sec - time_old.tv_sec >= 3)
+//         {
+//             print_speed();
+//         }
+// #endif
         break;
     case ESP_SPP_CONG_EVT:
         ESP_LOGI(SPP_TAG, "ESP_SPP_CONG_EVT");
@@ -187,7 +187,7 @@ static void esp_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
         break;
     case ESP_SPP_SRV_OPEN_EVT:
         ESP_LOGI(SPP_TAG, "ESP_SPP_SRV_OPEN_EVT");
-        gettimeofday(&time_old, NULL);
+        // gettimeofday(&time_old, NULL);
         break;
     case ESP_SPP_SRV_STOP_EVT:
         ESP_LOGI(SPP_TAG, "ESP_SPP_SRV_STOP_EVT");
@@ -210,7 +210,6 @@ void esp_bt_gap_cb(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_param_t *param)
         {
             ESP_LOGI(SPP_TAG, "authentication success: %s", param->auth_cmpl.device_name);
             esp_log_buffer_hex(SPP_TAG, param->auth_cmpl.bda, ESP_BD_ADDR_LEN);
-            testing = 1;
         }
         else
         {
@@ -402,9 +401,11 @@ static void spi_task(void *arg){
 
 void app_main(void)
 {
-    // xTaskCreate(echo_task, "uart_echo_task", 1024, NULL, 10, NULL);
-    xTaskCreate(spi_task, "spi_task", 1024, NULL, 10, NULL);
     // bt_init();
+    // xTaskCreate(echo_task, "uart_echo_task", 1024, NULL, 10, NULL);
+    xTaskCreate(spi_task, "spi_task", 1024, NULL, 10, NULL);     // SPI lower prio, running while bt has no comms
+    // xTaskCreate(btcomms_task, "bt_task", 1024, NULL, 15, NULL);      // BTcomms higher prio?
+
 
     // while (1)
     // {

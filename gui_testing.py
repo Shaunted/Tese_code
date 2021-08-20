@@ -147,7 +147,7 @@ class PUMPFrame(tk.Frame):
         print(self.com)
 
     def request(self):
-        self.port.write(int(256).to_bytes(2, 'big'))
+        self.port.write(int(255).to_bytes(2, 'big'))
         self.values = list(self.port.read_until())
         print(self.values)
         self.info_pwm.config(text='PWM: ' + str(self.values[0]))
