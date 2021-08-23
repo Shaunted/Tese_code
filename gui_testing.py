@@ -127,6 +127,7 @@ class PUMPFrame(tk.Frame):
         if not self.state_button and self.com != 0:
 
             self.port.write(int(self.pwm.get()).to_bytes(3, 'big'))
+            print(int(self.pwm.get()))
             self.pwm.delete(0, tk.END)
         else:
             if self.state_button:
