@@ -126,7 +126,7 @@ class PUMPFrame(tk.Frame):
         print('oi')
         if not self.state_button and self.com != 0:
 
-            self.port.write(int(self.pwm.get()).to_bytes(2, 'big'))
+            self.port.write(int(self.pwm.get()).to_bytes(3, 'big'))
             self.pwm.delete(0, tk.END)
         else:
             if self.state_button:
@@ -147,7 +147,7 @@ class PUMPFrame(tk.Frame):
         print(self.com)
 
     def request(self):
-        self.port.write(int(255).to_bytes(2, 'big'))
+        self.port.write(int(0xFF).to_bytes(1, 'big'))
         self.values = list(self.port.read_until())
         print(self.values)
         self.info_pwm.config(text='PWM: ' + str(self.values[0]))
@@ -171,7 +171,7 @@ class PUMPFrame(tk.Frame):
         self.off_switch = ImageTk.PhotoImage(Image.open(
             'off_switch.png').resize((51, 51), Image.ANTIALIAS))
 
-        self.aval_ports = ['/dev/ttyS3', '/dev/ttyS4']
+        self.aval_ports = ['/dev/ttyS14', '/dev/ttyS4']
         self.com = 0
 
         self.menu = ttk.Combobox(

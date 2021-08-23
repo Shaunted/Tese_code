@@ -61,10 +61,10 @@
 
 // UART DEFINES
 
-#define ECHO_TEST_TXD  (GPIO_NUM_4)
-#define ECHO_TEST_RXD  (GPIO_NUM_5)
-#define ECHO_TEST_RTS  (UART_PIN_NO_CHANGE)
-#define ECHO_TEST_CTS  (UART_PIN_NO_CHANGE)
+#define ECHO_TEST_TXD (GPIO_NUM_4)
+#define ECHO_TEST_RXD (GPIO_NUM_5)
+#define ECHO_TEST_RTS (UART_PIN_NO_CHANGE)
+#define ECHO_TEST_CTS (UART_PIN_NO_CHANGE)
 
 #define BUF_SIZE (1024)
 
@@ -77,18 +77,24 @@
 // #define SPP_SHOW_SPEED 1
 // #define SPP_SHOW_MODE SPP_SHOW_DATA /*Choose show mode: show data or speed*/
 
-uint8_t blt_buffer[1024];
+uint8_t blt_buffer[4];
 uint32_t blt_handle;
 uint16_t blt_len;
 // volatile bool testing = 0;
 
-uint8_t test_buffer[9];
-uint8_t sendreq_buffer[9] = {0xFF,};
-uint8_t sendpwm_buffer[9] = {0,};
+uint8_t TX_buffer[9];
+uint8_t sendreq_buffer[9] = {
+    0xFF,
+};
+uint8_t sendpwm_buffer[9] = {
+    0,
+};
+uint8_t RX_var = 0;
 uint8_t recv_buffer[9] = {0};
 volatile bool REQ = 1;
 
 volatile bool SERIALFLAG = 0;
+SemaphoreHandle_t xMutex = NULL;
 
 // BT VARIABLES
 static const esp_spp_mode_t esp_spp_mode = ESP_SPP_MODE_CB;
@@ -106,7 +112,7 @@ static void echo_task(void *arg)
     uart_config_t uart_config = {
         .baud_rate = 115200,
         .data_bits = UART_DATA_8_BITS,
-        .parity    = UART_PARITY_DISABLE,
+        .parity = UART_PARITY_DISABLE,
         .stop_bits = UART_STOP_BITS_1,
         .flow_ctrl = UART_HW_FLOWCTRL_DISABLE,
         .source_clk = UART_SCLK_APB,
@@ -116,15 +122,17 @@ static void echo_task(void *arg)
     uart_set_pin(UART_NUM_1, ECHO_TEST_TXD, ECHO_TEST_RXD, ECHO_TEST_RTS, ECHO_TEST_CTS);
 
     // Configure a temporary buffer for the incoming data
-    uint8_t *data = (uint8_t *) malloc(BUF_SIZE);
+    uint8_t *data = (uint8_t *)malloc(BUF_SIZE);
 
-    while (1) {
+    while (1)
+    {
         // Read data from the UART
         int len = uart_read_bytes(UART_NUM_1, data, BUF_SIZE, 20 / portTICK_RATE_MS);
-        if(len>0){
-            memcpy(test_buffer, data, len);
+        if (len > 0)
+        {
+            memcpy(TX_buffer, data, len);
             printf("len: %d\n", len);
-            printf("memcpy:%u\n", test_buffer[1]);
+            printf("memcpy:%u\n", TX_buffer[1]);
             SERIALFLAG = 1;
         }
         // Write data back to the UART
@@ -158,7 +166,7 @@ static void esp_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
         ESP_LOGI(SPP_TAG, "ESP_SPP_CL_INIT_EVT");
         break;
     case ESP_SPP_DATA_IND_EVT:
-// #if (SPP_SHOW_MODE == SPP_SHOW_DATA)
+        // #if (SPP_SHOW_MODE == SPP_SHOW_DATA)
         ESP_LOGI(SPP_TAG, "ESP_SPP_DATA_IND_EVT len=%d handle=%d",
                  param->data_ind.len, param->data_ind.handle);
         esp_log_buffer_hex("", param->data_ind.data, param->data_ind.len);
@@ -167,17 +175,17 @@ static void esp_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
         blt_len = param->data_ind.len;
 
         printf("len: %d\n", param->data_ind.len);
-        printf("data: %s\n", param->data_ind.data);
+        printf("data: %i\n", param->data_ind.data[1]);
         printf("memcpy:%s\n", blt_buffer);
         SERIALFLAG = 1;
-// #else
-//         gettimeofday(&time_new, NULL);
-//         data_num += param->data_ind.len;
-//         if (time_new.tv_sec - time_old.tv_sec >= 3)
-//         {
-//             print_speed();
-//         }
-// #endif
+        // #else
+        //         gettimeofday(&time_new, NULL);
+        //         data_num += param->data_ind.len;
+        //         if (time_new.tv_sec - time_old.tv_sec >= 3)
+        //         {
+        //             print_speed();
+        //         }
+        // #endif
         break;
     case ESP_SPP_CONG_EVT:
         ESP_LOGI(SPP_TAG, "ESP_SPP_CONG_EVT");
@@ -332,8 +340,8 @@ static void bt_init()
     esp_bt_gap_set_pin(pin_type, 0, pin_code);
 }
 
-
-static void spi_task(void *arg){
+static void spi_task(void *arg)
+{
     esp_err_t ret;
     spi_device_handle_t handle;
 
@@ -367,31 +375,34 @@ static void spi_task(void *arg){
     ret = spi_bus_add_device(SENDER_HOST, &devcfg, &handle);
     assert(ret == ESP_OK);
 
-    while (1) {
-        vTaskDelay( 10000 / portTICK_PERIOD_MS );
-        // if(SERIALFLAG){
-            if(REQ){
-                memcpy(test_buffer, sendreq_buffer, sizeof(sendreq_buffer));
-            }
-            else{
-                memcpy(test_buffer, sendpwm_buffer, sizeof(sendpwm_buffer));
-                REQ = 1;
-            }
-            while(n<8){ // em vez de 2 usar o len?
-                t.length = 8;
-                t.tx_buffer = test_buffer[n];
-                printf("TESTING TESTING: %u%u\n", test_buffer[0], test_buffer[1]);
-                t.rx_buffer = recv_buffer[n];
-                printf("RECEIVE: %s\n", recv_buffer);
+    while (1)
+    {
+        vTaskDelay(100 / portTICK_PERIOD_MS);
+        xSemaphoreTake(xMutex, 10 / portTICK_PERIOD_MS); // Semaphore aqui ou depois do if do req??? indiferente?
+        if (REQ)
+        {
+            memcpy(TX_buffer, sendreq_buffer, sizeof(sendreq_buffer));
+        }
+        else
+        {
+            memcpy(TX_buffer, sendpwm_buffer, sizeof(sendpwm_buffer));
+            REQ = 1;
+        }
+        while (n < 8)
+        { // em vez de 2 usar o len?
+            t.length = 8;
+            t.tx_buffer = &TX_buffer[n];
+            printf("TESTING TESTING: %i\n", TX_buffer[n]);
+            t.rx_buffer = &RX_var;
 
-                ret = spi_device_polling_transmit(handle, &t);
-                n++;
-            }
-            printf("RECEIVE: %s\n", recv_buffer);
-            printf("RECEIVE: %s\n", test_buffer);
-            // SERIALFLAG = 0;
-            n = 0;          // Use n to block/unblock bt comm?
-        // }
+            ret = spi_device_polling_transmit(handle, &t);
+            memcpy(&recv_buffer[n], &RX_var, sizeof(RX_var));
+            printf("RECEIVED: %i\n", recv_buffer[n]);
+            printf("NNNN = %i\n", n);
+            n++;
+        }
+        xSemaphoreGive(xMutex);
+        n = 0; // Use n to block/unblock bt comm?
     }
 
     // Never Reached
@@ -401,36 +412,35 @@ static void spi_task(void *arg){
 
 void app_main(void)
 {
-    // bt_init();
+    bt_init();
     // xTaskCreate(echo_task, "uart_echo_task", 1024, NULL, 10, NULL);
-    xTaskCreate(spi_task, "spi_task", 1024, NULL, 10, NULL);     // SPI lower prio, running while bt has no comms
+    xTaskCreate(spi_task, "spi_task", 2048, NULL, 5, NULL); // SPI lower prio, running while bt has no comms
     // xTaskCreate(btcomms_task, "bt_task", 1024, NULL, 15, NULL);      // BTcomms higher prio?
 
+    xMutex = xSemaphoreCreateMutex();
 
-    // while (1)
-    // {
-    //     vTaskDelay(10 / portTICK_PERIOD_MS);
-    //     if (SERIALFLAG)
-    //     {
-
-    //         printf("memcpy while: %d%d\n", blt_buffer[0], blt_buffer[1]);
-    //         printf("%d\n", blt_len);
-    //         if(blt_buffer[0] == 0xFF){      // Do the negative, because req is by default 1?
-    //             REQ = 1;
-    //             while(x!=0){
-    //                 vTaskDelay(100/ portTICK_PERIOD_MS);
-    //             }
-                
-    //         }
-    //         else{
-    //             REQ = 0;
-    //         }
-    //         SERIALFLAG = 0;
-    //         esp_spp_write(blt_handle, sizeof(recv_buffer), recv_buffer);
-
-
-    //         memset(blt_buffer, 0, blt_len);
-    //     }
-    // }
-    
+    while (1)
+    {
+        vTaskDelay(1000 / portTICK_PERIOD_MS);
+        printf("YOYOYOYOYOYOYOYOYO\n");
+        if (SERIALFLAG)
+        {
+            printf("memcpy while: %d%d%d\n", blt_buffer[0], blt_buffer[1], blt_buffer[2]);
+            printf("%d\n", blt_len);
+            if (blt_buffer[0] == 0xFF)
+            {
+                REQ = 1;
+                xSemaphoreTake(xMutex, 10 / portTICK_PERIOD_MS);
+                esp_spp_write(blt_handle, sizeof(recv_buffer), recv_buffer);
+                xSemaphoreGive(xMutex);
+            }
+            else
+            {
+                REQ = 0;
+                memcpy(&sendpwm_buffer[1], blt_buffer, sizeof(blt_buffer));
+            }
+            memset(blt_buffer, 0, blt_len);
+            SERIALFLAG = 0;
+        }
+    }
 }
