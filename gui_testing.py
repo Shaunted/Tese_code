@@ -31,7 +31,8 @@ class SASSFrame(tk.Frame):
         # self.ports = comports()
         # self.ports = sorted(list(self.ports))
 
-        self.aval_ports = ['/dev/ttyS3', '/dev/ttyS4']      # Acrescentar ports do SASS2300 quando tiver
+        # Acrescentar ports do SASS2300 quando tiver
+        self.aval_ports = ['/dev/ttyS3', '/dev/ttyS4']
         self.com = 0
 
         # Button states
@@ -124,35 +125,28 @@ class PUMPFrame(tk.Frame):
 
     def entry_callback(self, event):
         print('oi')
-        if not self.state_button and self.com != 0:
-
+        if self.com == 0:
+            messagebox.showwarning('Warning', 'Please select COM port')
+        else:
             self.port.write(int(self.pwm.get()).to_bytes(3, 'big'))
             print(int(self.pwm.get()))
             self.pwm.delete(0, tk.END)
-        else:
-            if self.state_button:
-                messagebox.showwarning(
-                    'Warning', 'Please turn pump on beforehand')
-            if self.com == 0:
-                messagebox.showwarning('Warning', 'Please select COM port')
+
 
     def button_command(self):
-        self.state_button = not self.state_button
-        if self.state_button:
-            self.button.config(image=self.off_switch)
-            # Send the stop command
+        if self.com == 0:
+            messagebox.showwarning('Warning', 'Please select COM port')
         else:
-            self.button.config(image=self.on_switch)
-            # do nothing because i just want this button for stopping? Maybe not even do this
-            # and do only a big red stop button?
-        print(self.com)
+            print(self.com)
+            self.port.write(int(0x0).to_bytes(3, 'big'))
 
     def request(self):
         self.port.write(int(0xFF).to_bytes(1, 'big'))
         self.values = list(self.port.read_until())
         print(self.values)
-        self.info_pwm.config(text='PWM: ' + str(self.values[0]))
-        self.info_flow.config(text='Flow: ' + str(self.values[1]))
+        self.info_pwm.config(text='PWM: ' + str((self.values[5]<<8)|self.values[4]))
+        print((self.values[7]<<8)|(self.values[6]))
+        self.info_flow.config(text='Flow: ' + str((self.values[7]<<8)|self.values[6]))
 
         # values = str.splitlines()
 
@@ -167,10 +161,8 @@ class PUMPFrame(tk.Frame):
         # Button states
         self.state_button = True
         # Button images
-        self.on_switch = ImageTk.PhotoImage(Image.open(
-            'on_switch.png').resize((51, 51), Image.ANTIALIAS))
-        self.off_switch = ImageTk.PhotoImage(Image.open(
-            'off_switch.png').resize((51, 51), Image.ANTIALIAS))
+        self.stop = ImageTk.PhotoImage(Image.open(
+            'stop.png').resize((51, 51), Image.ANTIALIAS))
 
         self.aval_ports = ['/dev/ttyS14', '/dev/ttyS4']
         self.com = 0
@@ -190,7 +182,7 @@ class PUMPFrame(tk.Frame):
         self.pwm.bind('<Key-Return>', self.entry_callback)
         self.pwm.pack(side='left')
         self.button = tk.Button(self, background='gray66', bd=0,
-                                highlightthickness=0, command=self.button_command, image=self.off_switch)
+                                highlightthickness=0, command=self.button_command, image=self.stop)
         self.button.grid(column=0, row=4, sticky='e')
 
         self.info_pwm = tk.Label(self, text='PWM: No value')
