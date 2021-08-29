@@ -232,12 +232,12 @@ class App(tk.Tk):
     def __create_widgets(self):
 
         # create the input frame
-        input_frame = SASSFrame(self)
-        input_frame.grid(column=0, row=1, sticky='sw')
+        SASS_frame = SASSFrame(self)
+        SASS_frame.grid(column=0, row=1, sticky='sw')
 
         # create the button frame
-        button_frame = PUMPFrame(self)
-        button_frame.grid(column=1, row=0, sticky='ne')
+        PUMP_frame = PUMPFrame(self)
+        PUMP_frame.grid(column=1, row=0, sticky='ne')
 
         logo_frame = LogoFrame(self)
         logo_frame.grid(column=0, row=0, sticky='nw')
