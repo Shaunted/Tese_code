@@ -169,6 +169,7 @@ class PUMPFrame(tk.Frame):
 
         self.menu = ttk.Combobox(
             self, values=self.aval_ports)
+        self.menu.set('Please choose the COM port')
         self.menu.bind("<<ComboboxSelected>>", self.callback)
         self.menu.grid(row=1, columnspan=1, sticky='we', padx=(20, 0), pady=10)
 

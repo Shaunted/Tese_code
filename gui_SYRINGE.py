@@ -6,6 +6,21 @@ from serial.tools.list_ports import comports
 
 
 
+##    Thread Pitch size -> M5 - P = 0.8 -> 0.8 mm/rev (Thread pitch doesnt matter because it works based on mm/min?)
+##    Slower machine -> Wrong configuration on purpose so less feed rate is achievable?
+
+##  NEED TO: GET VALUE FROM ENTRY, USE IT TO CALCULATE CORRESPONDING FEEDRATE AND THEN \\
+# SEND THE COMMAND (!not send command, simply save the value so the start button can have the feed rate)
+
+##  COMMANDS SHOULD BE SOMETHING ALONG THE LINES OF: G1 Xx Fy, WITH x AS THE DISTANCE \\
+# AND y AS THE FEED RATE.
+
+##  START AND RESET COMMANDS ARE FIXED. SAME DISTANCE, OPPOSITE DIRECTIONS (!maybe reset\\
+#  can use G0, since speed doesnt need to be slow?)
+
+## ADD STOP BUTTON IN CASE OF EMERGENCY?
+
+
 class PUMPFrame(tk.Frame):
     def __init__(self, container):
         super().__init__(container)
@@ -23,48 +38,47 @@ class PUMPFrame(tk.Frame):
     def flow_command(self, event):
         pass
 
-
     def start_command(self):
         pass
 
     def reset_command(self):
         pass
 
-        # values = str.splitlines()
-
     def __create_widgets(self):
         self.title = Label(self, text='Syringe Pump control menu',
                            background='gray66', anchor='nw')
         self.title.grid(column=0, row=0, sticky='w')
 
-        self.aval_ports = ['/dev/ttyS1', '/dev/ttyS2', '/dev/ttyS3', '/dev/ttyS4', '/dev/ttyS5', '/dev/ttyS6', '/dev/ttyS7'\
-            , '/dev/ttyS8', '/dev/ttyS9', '/dev/ttyS10', '/dev/ttyS11', '/dev/ttyS12', '/dev/ttyS13', '/dev/ttyS14', '/dev/ttyS15']
+        self.aval_ports = ['/dev/ttyS1', '/dev/ttyS2', '/dev/ttyS3', '/dev/ttyS4', '/dev/ttyS5', '/dev/ttyS6', '/dev/ttyS7',
+                           '/dev/ttyS8', '/dev/ttyS9', '/dev/ttyS10', '/dev/ttyS11', '/dev/ttyS12', '/dev/ttyS13', '/dev/ttyS14', '/dev/ttyS15']
         self.com = 0
 
         self.reset_Button = tk.Button(self, background='gray66', bd=0,
-                                highlightthickness=0, command=self.reset_command, text = 'RESET')
-        self.reset_Button.grid(column=0, row=5, sticky='w')
+                                      highlightthickness=2, command=self.reset_command, text='RESET')
+        self.reset_Button.grid(column=0, row=4, sticky='e', padx=55)
 
         self.start_Button = tk.Button(self, background='gray66', bd=0,
-                                highlightthickness=0, command=self.start_command, text= 'START')
+                                      highlightthickness=2, command=self.start_command, text='START')
         self.start_Button.grid(column=0, row=4, sticky='e')
 
-        self.flow_rate = tk.Entry(self, background='gray66', text= 'input desired flowrate')
+        self.flow_label = tk.Label(
+            self, text='Please input below the desired flow rate between idk and idk', background='white smoke', bd=1, highlightthickness=1, highlightbackground='black')
+        self.flow_label.grid(columnspan=1, row=2, sticky='w', padx=(5, 5))
+        self.flow_rate = tk.Entry(self, background='white smoke')
         self.flow_rate.bind('<Key-Return>', self.flow_command)
-        self.flow_rate.grid(column=0, row=3, sticky='we', padx=(20, 0))
+        self.flow_rate.grid(column=0, row=3, sticky='e', pady=5)
 
         # # Button states
         # self.state_button = True
         # # Button images
         # self.stop = ImageTk.PhotoImage(Image.open(
         #     'stop.png').resize((51, 51), Image.ANTIALIAS))
-
-
-
-        # self.menu = ttk.Combobox(
-        #     self, values=self.aval_ports)
-        # self.menu.bind("<<ComboboxSelected>>", self.callback)
-        # self.menu.grid(row=1, columnspan=1, sticky='we', padx=(20, 0), pady=10)
+        self.menu = ttk.Combobox(
+            self, values=self.aval_ports, fieldbackground='black')
+        self.menu.set('Please choose the COM port')
+        self.menu.bind("<<ComboboxSelected>>", self.callback)
+        self.menu.grid(row=1, columnspan=1, sticky='we',
+                       padx=(5, 170), pady=10)
 
         # self.entry_frame = tk.Frame(self)
         # self.entry_frame.config(background='gray66')
@@ -140,4 +154,3 @@ class App(tk.Tk):
 if __name__ == "__main__":
     app = App()
     app.mainloop()
-
