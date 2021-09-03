@@ -30,11 +30,21 @@ class PUMPFrame(tk.Frame):
                     highlightbackground='black')
         self.__create_widgets()
 
+##############################################################################
+##      Callback function for the COM ports dropdown menu.                  ##
+##      Gets the value from the menu and then opens a serial communication  ##
+##      with the chosen COM port.                                           ##
+##############################################################################
     def callback(self, event):
         print(self.menu.get())
         self.com = self.menu.get()
         self.port = serial.Serial(self.com, 115200, timeout=1, write_timeout=2)
 
+##############################################################################
+##      Flow rate callback function.                                        ##
+##      Checks if the input value is inside the possible range of actions,  ##
+##      and if not, issues an warning.                                      ##
+##############################################################################
     def flow_command(self, event):
         if self.com == 0:
             messagebox.showwarning('Warning', 'Please select COM port')
@@ -44,6 +54,12 @@ class PUMPFrame(tk.Frame):
                 messagebox.showwarning('Warning', 'Input outside of range. Please input a new value.')
             self.flow_rate.delete(0, tk.END)
 
+
+#################################################################################################
+##      Distances in the start and reset command are with a step/mm of 500.                    ##
+##      If that value changes to allow smaller flows, please update distances accordingly.     ##
+##      Flow rate default value of 100 mm/min. Start command can have variable speeds.         ##
+#################################################################################################
     def start_command(self):
         if self.flow != '':
             if 100<float(self.flow) or float(self.flow)<1:
@@ -57,6 +73,9 @@ class PUMPFrame(tk.Frame):
     def reset_command(self):
         self.port.write('G1 X0 F100\r'.encode('utf-8'))
 
+#################################
+##      Main widget function   ##
+#################################
     def __create_widgets(self):
         self.title = Label(self, text='Syringe Pump control menu',
                            background='gray66', anchor='nw')
@@ -83,11 +102,6 @@ class PUMPFrame(tk.Frame):
         self.flow_rate.bind('<Key-Return>', self.flow_command)
         self.flow_rate.grid(column=0, row=3, sticky='e', pady=5)
 
-        # # Button states
-        # self.state_button = True
-        # # Button images
-        # self.stop = ImageTk.PhotoImage(Image.open(
-        #     'stop.png').resize((51, 51), Image.ANTIALIAS))
         self.menu = ttk.Combobox(
             self, values=self.aval_ports)
         self.menu.set('Please choose the COM port')
@@ -95,34 +109,9 @@ class PUMPFrame(tk.Frame):
         self.menu.grid(row=1, columnspan=1, sticky='we',
                        padx=(5, 170), pady=10)
 
-        # self.entry_frame = tk.Frame(self)
-        # self.entry_frame.config(background='gray66')
-        # self.entry_frame.grid(column=0, row=3, sticky='we', padx=(20, 0))
-        # self.pwm_label = tk.Label(
-        #     self.entry_frame, text='Pump speed', background='gray66')
-        # self.pwm_label.pack(side='left', padx=(0, 5))
-        # self.pwm = tk.Entry(self.entry_frame)
-        # self.pwm.bind('<Key-Return>', self.entry_callback)
-        # self.pwm.pack(side='left')
-        # self.button = tk.Button(self, background='gray66', bd=0,
-        #                         highlightthickness=0, command=self.button_command, image=self.stop)
-        # self.button.grid(column=0, row=4, sticky='e')
-
-        # self.info_pwm = tk.Label(self, text='PWM: No value')
-        # self.info_pwm.grid(column=0, row=5, sticky='w')
-
-        # self.info_flow = tk.Label(self, text='Flow: No value')
-        # self.info_flow.grid(column=0, row=6, sticky='w')
-
-        # self.info_temp = tk.Label(self, text='Temperature: No value')
-        # self.info_temp.grid(column=0, row=7, sticky='w')
-
-        # self.req_button = tk.Button(
-        #     self, text='Request information', background='gray66', command=self.request)
-        # self.req_button.grid(column=0, row=8, sticky='e')
-
-
-# IST logo framing
+##########################
+## IST logo framing     ##
+##########################
 class LogoFrame(tk.Frame):
     def __init__(self, container):
         super().__init__(container)
@@ -137,6 +126,9 @@ class LogoFrame(tk.Frame):
         self.canvas.create_image(0, 0, image=self.img, anchor='nw')
 
 
+##############################################################################
+##      Parent frame. Contains all other frames and geometry between them.  ##
+##############################################################################
 class App(tk.Tk):
     def __init__(self):
         super().__init__()
@@ -165,7 +157,9 @@ class App(tk.Tk):
             # if widget != logo_frame:
             widget.grid(padx=30, pady=10)
 
-
+##########################
+##      Main Function   ##
+##########################
 if __name__ == "__main__":
     app = App()
     app.mainloop()
