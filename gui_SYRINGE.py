@@ -33,16 +33,29 @@ class PUMPFrame(tk.Frame):
     def callback(self, event):
         print(self.menu.get())
         self.com = self.menu.get()
-        self.port = serial.Serial(self.com, 115200, timeout=2)
+        self.port = serial.Serial(self.com, 115200, timeout=1, write_timeout=2)
 
     def flow_command(self, event):
-        pass
+        if self.com == 0:
+            messagebox.showwarning('Warning', 'Please select COM port')
+        else:
+            self.flow = self.flow_rate.get()
+            if (100<float(self.flow) or float(self.flow)<1):
+                messagebox.showwarning('Warning', 'Input outside of range. Please input a new value.')
+            self.flow_rate.delete(0, tk.END)
 
     def start_command(self):
-        pass
+        if self.flow != '':
+            if 100<float(self.flow) or float(self.flow)<1:
+                messagebox.showwarning('Warning', 'Input outside of range. Please input a new value.')
+            else:
+                start_command = 'G1 X66 F' + self.flow + '\r'
+                self.port.write(start_command.encode('utf-8'))
+        else:
+            self.port.write('G1 X66 F100\r'.encode('utf-8'))
 
     def reset_command(self):
-        pass
+        self.port.write('G1 X0 F100\r'.encode('utf-8'))
 
     def __create_widgets(self):
         self.title = Label(self, text='Syringe Pump control menu',
@@ -50,8 +63,10 @@ class PUMPFrame(tk.Frame):
         self.title.grid(column=0, row=0, sticky='w')
 
         self.aval_ports = ['/dev/ttyS1', '/dev/ttyS2', '/dev/ttyS3', '/dev/ttyS4', '/dev/ttyS5', '/dev/ttyS6', '/dev/ttyS7',
-                           '/dev/ttyS8', '/dev/ttyS9', '/dev/ttyS10', '/dev/ttyS11', '/dev/ttyS12', '/dev/ttyS13', '/dev/ttyS14', '/dev/ttyS15']
+                           '/dev/ttyS8', '/dev/ttyS9', '/dev/ttyS10', '/dev/ttyS11', '/dev/ttyS12', '/dev/ttyS13', '/dev/ttyS14', '/dev/ttyS15',
+                           '/dev/ttyS16', '/dev/ttyS17', '/dev/ttyS18', '/dev/ttyS19', '/dev/ttyS20']
         self.com = 0
+        self.flow = ''
 
         self.reset_Button = tk.Button(self, background='gray66', bd=0,
                                       highlightthickness=2, command=self.reset_command, text='RESET')
@@ -62,7 +77,7 @@ class PUMPFrame(tk.Frame):
         self.start_Button.grid(column=0, row=4, sticky='e')
 
         self.flow_label = tk.Label(
-            self, text='Please input below the desired flow rate between idk and idk', background='white smoke', bd=1, highlightthickness=1, highlightbackground='black')
+            self, text='Please input below the desired flow rate(mm/min) between 1 and 100', background='white smoke', bd=1, highlightthickness=1, highlightbackground='black')
         self.flow_label.grid(columnspan=1, row=2, sticky='w', padx=(5, 5))
         self.flow_rate = tk.Entry(self, background='white smoke')
         self.flow_rate.bind('<Key-Return>', self.flow_command)
@@ -74,7 +89,7 @@ class PUMPFrame(tk.Frame):
         # self.stop = ImageTk.PhotoImage(Image.open(
         #     'stop.png').resize((51, 51), Image.ANTIALIAS))
         self.menu = ttk.Combobox(
-            self, values=self.aval_ports, fieldbackground='black')
+            self, values=self.aval_ports)
         self.menu.set('Please choose the COM port')
         self.menu.bind("<<ComboboxSelected>>", self.callback)
         self.menu.grid(row=1, columnspan=1, sticky='we',
