@@ -377,7 +377,7 @@ static void spi_task(void *arg)
 
     while (1)
     {
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
+        vTaskDelay(100 / portTICK_PERIOD_MS);
         xSemaphoreTake(xMutex, 10 / portTICK_PERIOD_MS); // Semaphore aqui ou depois do if do req??? indiferente?
         if (REQ)
         {
@@ -421,7 +421,7 @@ void app_main(void)
 
     while (1)
     {
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
+        vTaskDelay(100 / portTICK_PERIOD_MS);
         printf("YOYOYOYOYOYOYOYOYO\n");
         if (SERIALFLAG)
         {
