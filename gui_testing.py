@@ -32,7 +32,9 @@ class SASSFrame(tk.Frame):
         # self.ports = sorted(list(self.ports))
 
         # Acrescentar ports do SASS2300 quando tiver
-        self.aval_ports = ['/dev/ttyS3', '/dev/ttyS4']
+        self.aval_ports = ['/dev/ttyS1', '/dev/ttyS2', '/dev/ttyS3', '/dev/ttyS4', '/dev/ttyS5', '/dev/ttyS6', '/dev/ttyS7',
+                           '/dev/ttyS8', '/dev/ttyS9', '/dev/ttyS10', '/dev/ttyS11', '/dev/ttyS12', '/dev/ttyS13', '/dev/ttyS14', '/dev/ttyS15',
+                           '/dev/ttyS16', '/dev/ttyS17', '/dev/ttyS18', '/dev/ttyS19', '/dev/ttyS20']
         self.com = 0
 
         # Button states
@@ -57,6 +59,7 @@ class SASSFrame(tk.Frame):
         # Drop down mennu init and config
         self.menu = ttk.Combobox(
             self, values=self.aval_ports)
+        self.menu.set('Please choose the COM port')
         self.menu.bind("<<ComboboxSelected>>", self.callback)
         self.menu.grid(row=1, columnspan=1, sticky='we', padx=(20, 0), pady=10)
 
@@ -164,7 +167,9 @@ class PUMPFrame(tk.Frame):
         self.stop = ImageTk.PhotoImage(Image.open(
             'stop.png').resize((51, 51), Image.ANTIALIAS))
 
-        self.aval_ports = ['/dev/ttyS14', '/dev/ttyS4']
+        self.aval_ports = ['/dev/ttyS1', '/dev/ttyS2', '/dev/ttyS3', '/dev/ttyS4', '/dev/ttyS5', '/dev/ttyS6', '/dev/ttyS7',
+                           '/dev/ttyS8', '/dev/ttyS9', '/dev/ttyS10', '/dev/ttyS11', '/dev/ttyS12', '/dev/ttyS13', '/dev/ttyS14', '/dev/ttyS15',
+                           '/dev/ttyS16', '/dev/ttyS17', '/dev/ttyS18', '/dev/ttyS19', '/dev/ttyS20']
         self.com = 0
 
         self.menu = ttk.Combobox(
