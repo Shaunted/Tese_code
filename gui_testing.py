@@ -20,6 +20,37 @@ class SASSFrame(tk.Frame):
         self.com = self.menu.get()
         self.port = serial.Serial(self.com, 115200, timeout=2)
 
+
+    # Button callback functions
+
+    def button_pump_command(self):
+        if self.com == 0:
+            messagebox.showwarning('Warning', 'Please select COM port')
+        else:
+            self.state_pump = not self.state_pump
+            print(self.pump["state"])
+            if self.state_pump:
+                self.pump.config(image=self.off_switch)
+                self.port.write('F0'.encode())
+            else:
+                self.pump.config(image=self.on_switch)
+                self.port.write('F1'.encode())
+            print(self.com)
+
+    def button_fan_command(self):
+        if self.com == 0:
+            messagebox.showwarning('Warning', 'Please select COM port')
+        else:
+            self.state_fan = not self.state_fan
+            print(self.fan["state"])
+            if self.state_fan:
+                self.fan.config(image=self.off_switch)
+                self.port.write('G0'.encode())
+            else:
+                self.fan.config(image=self.on_switch)
+                self.port.write('G1'.encode())
+            print(self.com)
+
     def __create_widgets(self):
 
         # Menu Title
@@ -87,29 +118,6 @@ class SASSFrame(tk.Frame):
         # self.fan.grid(column=0,row=3, sticky='we', padx=0)
         self.fan.pack(side='left')
 
-    # Button callback functions
-
-    def button_pump_command(self):
-        self.state_pump = not self.state_pump
-        print(self.pump["state"])
-        if self.state_pump:
-            self.pump.config(image=self.off_switch)
-            self.port.write('F0'.encode())
-        else:
-            self.pump.config(image=self.on_switch)
-            self.port.write('F1'.encode())
-        print(self.com)
-
-    def button_fan_command(self):
-        self.state_fan = not self.state_fan
-        print(self.fan["state"])
-        if self.state_fan:
-            self.fan.config(image=self.off_switch)
-            self.port.write('G0'.encode())
-        else:
-            self.fan.config(image=self.on_switch)
-            self.port.write('G1'.encode())
-        print(self.com)
 
 
 class PUMPFrame(tk.Frame):
@@ -144,12 +152,15 @@ class PUMPFrame(tk.Frame):
             self.port.write(int(0x0).to_bytes(3, 'big'))
 
     def request(self):
-        self.port.write(int(0xFF).to_bytes(1, 'big'))
-        self.values = list(self.port.read_until())
-        print(self.values)
-        self.info_pwm.config(text='PWM: ' + str((self.values[5]<<8)|self.values[4]))
-        print((self.values[7]<<8)|(self.values[6]))
-        self.info_flow.config(text='Flow: ' + str((self.values[7]<<8)|self.values[6]))
+        if self.com == 0:
+            messagebox.showwarning('Warning', 'Please select COM port')
+        else:
+            self.port.write(int(0xFF).to_bytes(1, 'big'))
+            self.values = list(self.port.read_until())
+            print(self.values)
+            self.info_pwm.config(text='PWM: ' + str((self.values[5]<<8)|self.values[4]))
+            print((self.values[7]<<8)|(self.values[6]))
+            self.info_flow.config(text='Flow: ' + str((self.values[7]<<8)|self.values[6]))
 
         # values = str.splitlines()
 

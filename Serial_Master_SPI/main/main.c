@@ -392,17 +392,14 @@ static void spi_task(void *arg)
         { // em vez de 2 usar o len?
             t.length = 8;
             t.tx_buffer = &TX_buffer[n];
-            printf("TESTING TESTING: %i\n", TX_buffer[n]);
             t.rx_buffer = &RX_var;
 
             ret = spi_device_polling_transmit(handle, &t);
             memcpy(&recv_buffer[n], &RX_var, sizeof(RX_var));
-            printf("RECEIVED: %i\n", recv_buffer[n]);
-            printf("NNNN = %i\n", n);
             n++;
         }
         xSemaphoreGive(xMutex);
-        n = 0; // Use n to block/unblock bt comm?
+        n = 0;
     }
 
     // Never Reached
