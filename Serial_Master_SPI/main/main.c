@@ -105,40 +105,40 @@ static const esp_spp_mode_t esp_spp_mode = ESP_SPP_MODE_CB;
 static const esp_spp_sec_t sec_mask = ESP_SPP_SEC_AUTHENTICATE;
 static const esp_spp_role_t role_slave = ESP_SPP_ROLE_SLAVE;
 
-static void echo_task(void *arg)
-{
-    /* Configure parameters of an UART driver,
-     * communication pins and install the driver */
-    uart_config_t uart_config = {
-        .baud_rate = 115200,
-        .data_bits = UART_DATA_8_BITS,
-        .parity = UART_PARITY_DISABLE,
-        .stop_bits = UART_STOP_BITS_1,
-        .flow_ctrl = UART_HW_FLOWCTRL_DISABLE,
-        .source_clk = UART_SCLK_APB,
-    };
-    uart_driver_install(UART_NUM_1, BUF_SIZE * 2, 0, 0, NULL, 0);
-    uart_param_config(UART_NUM_1, &uart_config);
-    uart_set_pin(UART_NUM_1, ECHO_TEST_TXD, ECHO_TEST_RXD, ECHO_TEST_RTS, ECHO_TEST_CTS);
+// static void echo_task(void *arg)
+// {
+//     /* Configure parameters of an UART driver,
+//      * communication pins and install the driver */
+//     uart_config_t uart_config = {
+//         .baud_rate = 115200,
+//         .data_bits = UART_DATA_8_BITS,
+//         .parity = UART_PARITY_DISABLE,
+//         .stop_bits = UART_STOP_BITS_1,
+//         .flow_ctrl = UART_HW_FLOWCTRL_DISABLE,
+//         .source_clk = UART_SCLK_APB,
+//     };
+//     uart_driver_install(UART_NUM_1, BUF_SIZE * 2, 0, 0, NULL, 0);
+//     uart_param_config(UART_NUM_1, &uart_config);
+//     uart_set_pin(UART_NUM_1, ECHO_TEST_TXD, ECHO_TEST_RXD, ECHO_TEST_RTS, ECHO_TEST_CTS);
 
-    // Configure a temporary buffer for the incoming data
-    uint8_t *data = (uint8_t *)malloc(BUF_SIZE);
+//     // Configure a temporary buffer for the incoming data
+//     uint8_t *data = (uint8_t *)malloc(BUF_SIZE);
 
-    while (1)
-    {
-        // Read data from the UART
-        int len = uart_read_bytes(UART_NUM_1, data, BUF_SIZE, 20 / portTICK_RATE_MS);
-        if (len > 0)
-        {
-            memcpy(TX_buffer, data, len);
-            printf("len: %d\n", len);
-            printf("memcpy:%u\n", TX_buffer[1]);
-            SERIALFLAG = 1;
-        }
-        // Write data back to the UART
-        // uart_write_bytes(UART_NUM_1, (const char *) data, len);
-    }
-}
+//     while (1)
+//     {
+//         // Read data from the UART
+//         int len = uart_read_bytes(UART_NUM_1, data, BUF_SIZE, 20 / portTICK_RATE_MS);
+//         if (len > 0)
+//         {
+//             memcpy(TX_buffer, data, len);
+//             printf("len: %d\n", len);
+//             printf("memcpy:%u\n", TX_buffer[1]);
+//             SERIALFLAG = 1;
+//         }
+//         // Write data back to the UART
+//         uart_write_bytes(UART_NUM_1, (const char *) data, len);
+// //     }
+// // }
 
 static void esp_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
 {
@@ -410,8 +410,9 @@ static void spi_task(void *arg)
 void app_main(void)
 {
     bt_init();
-    // xTaskCreate(echo_task, "uart_echo_task", 1024, NULL, 10, NULL);
     xTaskCreate(spi_task, "spi_task", 2048, NULL, 5, NULL); // SPI lower prio, running while bt has no comms
+    // xTaskCreate(echo_task, "uart_echo_task", 1024, NULL, 10, NULL);
+
     // xTaskCreate(btcomms_task, "bt_task", 1024, NULL, 15, NULL);      // BTcomms higher prio?
 
     xMutex = xSemaphoreCreateMutex();
@@ -424,7 +425,16 @@ void app_main(void)
         {
             printf("memcpy while: %d%d%d\n", blt_buffer[0], blt_buffer[1], blt_buffer[2]);
             printf("%d\n", blt_len);
-            if (blt_buffer[0] == 0xFF)
+
+            if (blt_buffer[0] == 0xAA){
+                uint8_t *data = (uint8_t*) malloc(3);
+                char y[3] = {blt_buffer[1], blt_buffer[2], 0};
+                memcpy(data, y, 3);
+                printf("YAAAAAAAAAAAAAA: %s, %s \n", y, data);
+                // uart_write_bytes(UART_NUM_1, (const char *) data, len);
+            }
+
+            else if (blt_buffer[0] == 0xFF)
             {
                 REQ = 1;
                 xSemaphoreTake(xMutex, 10 / portTICK_PERIOD_MS);

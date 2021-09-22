@@ -42,10 +42,18 @@ class SASSFrame(tk.Frame):
             self.state_pump = not self.state_pump    
             if self.state_pump:     # Checks state variable to check if on or off
                 self.pump.config(image=self.off_switch)
-                self.port.write('F0'.encode())
+                # self.port.write('F0'.encode())
+                l = [0xaa]
+                h=list('F0'.encode())
+                l = l+h
+                self.port.write(serial.to_bytes(l))
             else:
                 self.pump.config(image=self.on_switch)
-                self.port.write('F1'.encode())
+                # self.port.write('F0'.encode())
+                l = [0xaa]
+                h=list('F1'.encode())
+                l = l+h
+                self.port.write(serial.to_bytes(l))
 
 
     #########################################################
@@ -61,10 +69,18 @@ class SASSFrame(tk.Frame):
             self.state_fan = not self.state_fan
             if self.state_fan:     # Checks state variable to check if on or off
                 self.fan.config(image=self.off_switch)
-                self.port.write('G0'.encode())
+                # self.port.write('G0'.encode())
+                l = [0xaa]
+                h=list('G0'.encode())
+                l = l+h
+                self.port.write(serial.to_bytes(l))
             else:
                 self.fan.config(image=self.on_switch)
-                self.port.write('G1'.encode())
+                # self.port.write('G1'.encode())
+                l = [0xaa]
+                h=list('G1'.encode())
+                l = l+h
+                self.port.write(serial.to_bytes(l))
 
     def __create_widgets(self):
 
