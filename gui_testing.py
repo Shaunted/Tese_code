@@ -5,24 +5,58 @@ import serial
 from serial.tools.list_ports import comports
 
 
+
+class App(tk.Tk):
+    def __init__(self):
+        super().__init__()
+        self.title('SASS/Pump control system')
+        # self.geometry('400x150')  # Use if a certain window size is required
+
+        # layout on the root window
+        self.columnconfigure(0, weight=4)
+        self.columnconfigure(1, weight=1)
+
+        # background of the root window
+        self.config(bg='gray66')
+
+        self.__create_widgets()
+
+    def __create_widgets(self):
+
+        logo_frame = LogoFrame(self)
+        logo_frame.grid(column=0, row=0, sticky='nw')
+        # create the input frame
+        SASS_frame = SASSFrame(self, logo_frame)
+        SASS_frame.grid(column=0, row=1, sticky='sw')
+
+        # create the button frame
+        PUMP_frame = PUMPFrame(self, logo_frame)
+        PUMP_frame.grid(column=1, row=0, sticky='ne')
+
+
+        for widget in self.winfo_children():
+            widget.grid(padx=30, pady=10)
+
+
 class SASSFrame(tk.Frame):
-    def __init__(self, container):
+    def __init__(self, container, logo_frame):
         super().__init__(container)
         # setup the grid layout manager
+        self.logo = logo_frame
         self.columnconfigure(0, weight=1)
         # self.columnconfigure(1, weight=3)
         self.config(bg='gray66', highlightthickness=2,
                     highlightbackground='black')
         self.__create_widgets()
 
-    #############################################
-    #   Drop down menu callback function.       #
-    #   Gets value chosen in the menu           #
-    #   and opens serial port with that value   #
-    def callback(self, event):
-        print(self.menu.get())
-        self.com = self.menu.get()
-        self.port = serial.Serial(self.com, 115200, timeout=2)
+    # #############################################
+    # #   Drop down menu callback function.       #
+    # #   Gets value chosen in the menu           #
+    # #   and opens serial port with that value   #
+    # def callback(self, event):
+    #     print(self.menu.get())
+    #     self.com = self.menu.get()
+    #     self.port = serial.Serial(self.com, 115200, timeout=2)
 
 
     #############################
@@ -36,7 +70,7 @@ class SASSFrame(tk.Frame):
     #   If off-to-on, sends turning on command              #
     #   If opposite sends turning off command               #
     def button_pump_command(self):
-        if self.com == 0:
+        if self.logo.com == 0:
             messagebox.showwarning('Warning', 'Please select COM port')
         else:
             self.state_pump = not self.state_pump    
@@ -46,14 +80,14 @@ class SASSFrame(tk.Frame):
                 l = [0xaa]
                 h=list('F0'.encode())
                 l = l+h
-                self.port.write(serial.to_bytes(l))
+                self.logo.port.write(serial.to_bytes(l))
             else:
                 self.pump.config(image=self.on_switch)
                 # self.port.write('F0'.encode())
                 l = [0xaa]
                 h=list('F1'.encode())
                 l = l+h
-                self.port.write(serial.to_bytes(l))
+                self.logo.port.write(serial.to_bytes(l))
 
 
     #########################################################
@@ -63,7 +97,7 @@ class SASSFrame(tk.Frame):
     #   If off-to-on, sends turning on command              #
     #   If opposite sends turning off command               #
     def button_fan_command(self):
-        if self.com == 0:
+        if self.logo.com == 0:
             messagebox.showwarning('Warning', 'Please select COM port')
         else:
             self.state_fan = not self.state_fan
@@ -73,14 +107,14 @@ class SASSFrame(tk.Frame):
                 l = [0xaa]
                 h=list('G0'.encode())
                 l = l+h
-                self.port.write(serial.to_bytes(l))
+                self.logo.port.write(serial.to_bytes(l))
             else:
                 self.fan.config(image=self.on_switch)
                 # self.port.write('G1'.encode())
                 l = [0xaa]
                 h=list('G1'.encode())
                 l = l+h
-                self.port.write(serial.to_bytes(l))
+                self.logo.port.write(serial.to_bytes(l))
 
     def __create_widgets(self):
 
@@ -89,13 +123,13 @@ class SASSFrame(tk.Frame):
                            background='gray66', anchor='nw')
         self.title.grid(column=0, row=0, sticky='w')
 
-        # List containing COM ports
-        self.aval_ports = ['/dev/ttyS1', '/dev/ttyS2', '/dev/ttyS3', '/dev/ttyS4', '/dev/ttyS5', '/dev/ttyS6', '/dev/ttyS7',
-                           '/dev/ttyS8', '/dev/ttyS9', '/dev/ttyS10', '/dev/ttyS11', '/dev/ttyS12', '/dev/ttyS13', '/dev/ttyS14', '/dev/ttyS15',
-                           '/dev/ttyS16', '/dev/ttyS17', '/dev/ttyS18', '/dev/ttyS19', '/dev/ttyS20']
+        # # List containing COM ports
+        # self.aval_ports = ['/dev/ttyS1', '/dev/ttyS2', '/dev/ttyS3', '/dev/ttyS4', '/dev/ttyS5', '/dev/ttyS6', '/dev/ttyS7',
+        #                    '/dev/ttyS8', '/dev/ttyS9', '/dev/ttyS10', '/dev/ttyS11', '/dev/ttyS12', '/dev/ttyS13', '/dev/ttyS14', '/dev/ttyS15',
+        #                    '/dev/ttyS16', '/dev/ttyS17', '/dev/ttyS18', '/dev/ttyS19', '/dev/ttyS20']
 
-        # Variable to check if comport chosen or not
-        self.com = 0
+        # # Variable to check if comport chosen or not
+        # self.com = 0
 
         # Button states
         self.state_pump = True
@@ -106,12 +140,12 @@ class SASSFrame(tk.Frame):
         self.off_switch = ImageTk.PhotoImage(Image.open(
             'off_switch.png').resize((51, 51), Image.ANTIALIAS))
 
-        # Drop down mennu init and config
-        self.menu = ttk.Combobox(
-            self, values=self.aval_ports)
-        self.menu.set('Please choose the COM port')
-        self.menu.bind("<<ComboboxSelected>>", self.callback)
-        self.menu.grid(row=1, columnspan=1, sticky='we', padx=(20, 0), pady=10)
+        # # Drop down mennu init and config
+        # self.menu = ttk.Combobox(
+        #     self, values=self.aval_ports)
+        # self.menu.set('Please choose the COM port')
+        # self.menu.bind("<<ComboboxSelected>>", self.callback)
+        # self.menu.grid(row=1, columnspan=1, sticky='we', padx=(20, 0), pady=10)
 
         # Pump frame, label and button init
         self.pump_frame = tk.Frame(self)
@@ -138,33 +172,34 @@ class SASSFrame(tk.Frame):
 
 
 class PUMPFrame(tk.Frame):
-    def __init__(self, container):
+    def __init__(self, container, logo_frame):
         super().__init__(container)
         # setup the grid layout manager
+        self.logo = logo_frame
         self.columnconfigure(0, weight=1)
         self.config(bg='gray66', highlightthickness=2,
                     highlightbackground='black')
         self.__create_widgets()
 
 
-    #############################################
-    #   Drop down menu callback function.       #
-    #   Gets value chosen in the menu           #
-    #   and opens serial port with that value   #
-    def callback(self, event):
-        print(self.menu.get())
-        self.com = self.menu.get()
-        self.port = serial.Serial(self.com, 115200, timeout=2)
+    # #############################################
+    # #   Drop down menu callback function.       #
+    # #   Gets value chosen in the menu           #
+    # #   and opens serial port with that value   #
+    # def callback(self, event):
+    #     print(self.menu.get())
+    #     LogoFrame.com = self.menu.get()
+    #     LogoFrame.port = serial.Serial(LogoFrame.com, 115200, timeout=2)
 
     #########################################################
     #   Stop button callback function                       #
     #   Checks if comport chosen, if not, issue warning     #
     #   Sends written value to serial port                  #
     def entry_callback(self, event):
-        if self.com == 0:
+        if self.logo.com == 0:
             messagebox.showwarning('Warning', 'Please select COM port')
         else:
-            self.port.write(int(self.pwm.get()).to_bytes(3, 'big'))
+            self.logo.port.write(int(self.pwm.get()).to_bytes(3, 'big'))
             self.pwm.delete(0, tk.END)
 
 
@@ -173,10 +208,10 @@ class PUMPFrame(tk.Frame):
     #   Checks if comport chosen, if not, issue warning     #
     #   Sends value 0 to turn off pump                      #
     def button_command(self):
-        if self.com == 0:
+        if self.logo.com == 0:
             messagebox.showwarning('Warning', 'Please select COM port')
         else:
-            self.port.write(int(0x0).to_bytes(3, 'big'))
+            self.logo.port.write(int(0x0).to_bytes(3, 'big'))
 
 
     #########################################################
@@ -185,14 +220,14 @@ class PUMPFrame(tk.Frame):
     #   Sends request message and reads the received info   #
     #   and then displays it on the info menu               #
     def request(self):
-        if self.com == 0:
+        if self.logo.com == 0:
             messagebox.showwarning('Warning', 'Please select COM port')
         else:
-            self.port.write(int(0xFF).to_bytes(1, 'big'))
-            self.values = list(self.port.read_until())
+            self.logo.port.write(int(0xFF).to_bytes(1, 'big'))
+            self.values = list(self.logo.port.read_until())
             self.info_pwm.config(text='PWM: ' + str((self.values[5]<<8)|self.values[4]))
             self.info_flow.config(text='Flow: ' + str((self.values[7]<<8)|self.values[6]))
-
+    
 
     def __create_widgets(self):
         self.title = Label(self, text='Pump Control and View Menu',
@@ -206,21 +241,21 @@ class PUMPFrame(tk.Frame):
             'stop.png').resize((51, 51), Image.ANTIALIAS))
 
 
-        # List containing COM ports
-        self.aval_ports = ['/dev/ttyS1', '/dev/ttyS2', '/dev/ttyS3', '/dev/ttyS4', '/dev/ttyS5', '/dev/ttyS6', '/dev/ttyS7',
-                           '/dev/ttyS8', '/dev/ttyS9', '/dev/ttyS10', '/dev/ttyS11', '/dev/ttyS12', '/dev/ttyS13', '/dev/ttyS14', '/dev/ttyS15',
-                           '/dev/ttyS16', '/dev/ttyS17', '/dev/ttyS18', '/dev/ttyS19', '/dev/ttyS20']
+        # # List containing COM ports
+        # self.aval_ports = ['/dev/ttyS1', '/dev/ttyS2', '/dev/ttyS3', '/dev/ttyS4', '/dev/ttyS5', '/dev/ttyS6', '/dev/ttyS7',
+        #                    '/dev/ttyS8', '/dev/ttyS9', '/dev/ttyS10', '/dev/ttyS11', '/dev/ttyS12', '/dev/ttyS13', '/dev/ttyS14', '/dev/ttyS15',
+        #                    '/dev/ttyS16', '/dev/ttyS17', '/dev/ttyS18', '/dev/ttyS19', '/dev/ttyS20']
         
-        # Variable to check if comport chosen or not        
-        self.com = 0
+        # # Variable to check if comport chosen or not        
+        # self.com = 0
 
 
-        # Drop down mennu init and config
-        self.menu = ttk.Combobox(
-            self, values=self.aval_ports)
-        self.menu.set('Please choose the COM port')
-        self.menu.bind("<<ComboboxSelected>>", self.callback)
-        self.menu.grid(row=1, columnspan=1, sticky='we', padx=(20, 0), pady=10)
+        # # Drop down mennu init and config
+        # self.menu = ttk.Combobox(
+        #     self, values=self.aval_ports)
+        # self.menu.set('Please choose the COM port')
+        # self.menu.bind("<<ComboboxSelected>>", self.callback)
+        # self.menu.grid(row=1, columnspan=1, sticky='we', padx=(20, 0), pady=10)
 
         # Entry frame, labels and buttons init
         self.entry_frame = tk.Frame(self)
@@ -228,10 +263,10 @@ class PUMPFrame(tk.Frame):
         self.entry_frame.grid(column=0, row=3, sticky='we', padx=(20, 0))
         self.pwm_label = tk.Label(
             self.entry_frame, text='Pump speed', background='gray66')
-        self.pwm_label.pack(side='left', padx=(0, 5))
+        self.pwm_label.pack(side='left', padx=(0, 5), pady=(20,0))
         self.pwm = tk.Entry(self.entry_frame)
         self.pwm.bind('<Key-Return>', self.entry_callback)
-        self.pwm.pack(side='left')
+        self.pwm.pack(side='left', pady=(20,0))
         self.button = tk.Button(self, background='gray66', bd=0,
                                 highlightthickness=0, command=self.button_command, image=self.stop)
         self.button.grid(column=0, row=4, sticky='e')
@@ -258,7 +293,18 @@ class PUMPFrame(tk.Frame):
 class LogoFrame(tk.Frame):
     def __init__(self, container):
         super().__init__(container)
+        self.config(bg='gray66')
         self.__create_widgets()
+
+            
+    #############################################
+    #   Drop down menu callback function.       #
+    #   Gets value chosen in the menu           #
+    #   and opens serial port with that value   #
+    def callback(self, event):
+        print(self.menu.get())
+        self.com = self.menu.get()
+        self.port = serial.Serial(self.com, 115200, timeout=2)
 
     def __create_widgets(self):
         self.img = ImageTk.PhotoImage(Image.open(
@@ -268,38 +314,19 @@ class LogoFrame(tk.Frame):
         self.canvas.pack()
         self.canvas.create_image(0, 0, image=self.img, anchor='nw')
 
+        # List containing COM ports
+        self.aval_ports = ['/dev/ttyS1', '/dev/ttyS2', '/dev/ttyS3', '/dev/ttyS4', '/dev/ttyS5', '/dev/ttyS6', '/dev/ttyS7',
+                           '/dev/ttyS8', '/dev/ttyS9', '/dev/ttyS10', '/dev/ttyS11', '/dev/ttyS12', '/dev/ttyS13', '/dev/ttyS14', '/dev/ttyS15',
+                           '/dev/ttyS16', '/dev/ttyS17', '/dev/ttyS18', '/dev/ttyS19', '/dev/ttyS20']
+        
+        # Variable to check if comport chosen or not        
+        self.com = 0
 
-class App(tk.Tk):
-    def __init__(self):
-        super().__init__()
-        self.title('SASS/Pump control system')
-        # self.geometry('400x150')  # Use if a certain window size is required
-
-        # layout on the root window
-        self.columnconfigure(0, weight=4)
-        self.columnconfigure(1, weight=1)
-
-        # background of the root window
-        self.config(bg='gray66')
-
-        self.__create_widgets()
-
-    def __create_widgets(self):
-
-        # create the input frame
-        SASS_frame = SASSFrame(self)
-        SASS_frame.grid(column=0, row=1, sticky='sw')
-
-        # create the button frame
-        PUMP_frame = PUMPFrame(self)
-        PUMP_frame.grid(column=1, row=0, sticky='ne')
-
-        logo_frame = LogoFrame(self)
-        logo_frame.grid(column=0, row=0, sticky='nw')
-
-        for widget in self.winfo_children():
-            widget.grid(padx=30, pady=10)
-
+        self.menu = ttk.Combobox(
+            self, values=self.aval_ports)
+        self.menu.set('Please choose the COM port')
+        self.menu.bind("<<ComboboxSelected>>", self.callback)
+        self.menu.pack(side='bottom', fill='x', pady=(20,0))
 
 if __name__ == "__main__":
     app = App()
