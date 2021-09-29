@@ -73,6 +73,26 @@ class PUMPFrame(tk.Frame):
     def reset_command(self):
         self.port.write('G1 X0 F100\r'.encode('utf-8'))
 
+    def half_command(self):
+        if self.flow != '':
+            if 100<float(self.flow) or float(self.flow)<1:
+                messagebox.showwarning('Warning', 'Input outside of range. Please input a new value.')
+            else:
+                half_command = 'G1 X33 F' + self.flow + '\r'
+                self.port.write(half_command.encode('utf-8'))
+        else:
+            self.port.write('G1 X33 F100\r'.encode('utf-8'))
+
+    def quarter_command(self):
+        if self.flow != '':
+            if 100<float(self.flow) or float(self.flow)<1:
+                messagebox.showwarning('Warning', 'Input outside of range. Please input a new value.')
+            else:
+                quarter_command = 'G1 X16 F' + self.flow + '\r'
+                self.port.write(quarter_command.encode('utf-8'))
+        else:
+            self.port.write('G1 X16 F100\r'.encode('utf-8'))
+
 #################################
 ##      Main widget function   ##
 #################################
@@ -89,11 +109,19 @@ class PUMPFrame(tk.Frame):
 
         self.reset_Button = tk.Button(self, background='gray66', bd=0,
                                       highlightthickness=2, command=self.reset_command, text='RESET')
-        self.reset_Button.grid(column=0, row=4, sticky='e', padx=55)
+        self.reset_Button.grid(column=0, row=4, sticky='e', padx=71)
 
         self.start_Button = tk.Button(self, background='gray66', bd=0,
-                                      highlightthickness=2, command=self.start_command, text='START')
+                                      highlightthickness=2, command=self.start_command, text='FULL')
         self.start_Button.grid(column=0, row=4, sticky='e')
+
+        self.half_Button = tk.Button(self, background='gray66', bd=0,
+                                      highlightthickness=2, command=self.half_command, text='HALF')
+        self.half_Button.grid(column=0, row=5, sticky='e', padx=77)
+
+        self.quarter_Button = tk.Button(self, background='gray66', bd=0,
+                                      highlightthickness=2, command=self.quarter_command, text='QUARTER')
+        self.quarter_Button.grid(column=0, row=5, sticky='e')
 
         self.flow_label = tk.Label(
             self, text='Please input below the desired flow rate(mm/min) between 1 and 100', background='white smoke', bd=1, highlightthickness=1, highlightbackground='black')
